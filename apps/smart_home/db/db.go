@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"smarthome/models"
@@ -28,7 +29,34 @@ func New(connString string) (*DB, error) {
 		return nil, fmt.Errorf("unable to ping database: %w", err)
 	}
 
-	return &DB{Pool: pool}, nil
+	db := &DB{Pool: pool}
+
+	// Run init.sql on first startup
+	if err := db.runInitSQL(); err != nil {
+		return nil, fmt.Errorf("unable to run init.sql: %w", err)
+	}
+
+	return db, nil
+}
+
+// runInitSQL executes the init.sql file if it exists
+func (db *DB) runInitSQL() error {
+	initSQLPath := "init.sql"
+	
+	content, err := os.ReadFile(initSQLPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("error reading init.sql: %w", err)
+	}
+
+	_, err = db.Pool.Exec(context.Background(), string(content))
+	if err != nil {
+		return fmt.Errorf("error executing init.sql: %w", err)
+	}
+
+	return nil
 }
 
 // Close closes the database connection
