@@ -1,0 +1,162 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+' ---------- Device ----------
+class DeviceController{
+    + Add() [POST]
+    + Change() [PUT]
+    + GetStatus() [GET]
+    + Connect() [POST]
+    + Disconnect() [POST]
+    
+}
+
+class DeviceService {
+    + Add() 
+    + Change() 
+    + SendCommand()
+    + GetStatus()
+    + Disconnect()
+    + Connect()
+}
+
+class DeviceRepository{    
+}
+
+DeviceController --> DeviceService
+DeviceService --> DeviceRepository
+
+' ---------- Home ----------
+class HomeController{
+    + Add() [POST]
+    + Change() [PUT]
+    + ConnectToDevice() [POST]
+      
+}
+
+class HomeService {
+  + Add()
+  + Change()
+  + ConnectToDevice()
+  
+}
+
+class HomeRepository
+{
+}
+
+HomeController --> HomeService
+HomeService --> HomeRepository
+
+'--------- User ----------
+
+class UserController
+{
+    + Add() [POST]
+    + Change() [PUT]
+    + SetHome() [POST]
+    + Disable() [POST]
+    + GetById() [GET]
+}
+
+
+class UserService {
+  + Add()
+  + Change()
+  + SetHome()
+  + Disable()
+  + GetById()
+}
+
+class UserRepository{
+
+}
+
+class AccountController{
+    + SetPassword() [POST]
+    + Login() [POST]
+    + SetRole() [POST]
+}
+
+class AccountService{
+    + SetPassword()
+    + Login()
+    + SetRole()
+}
+
+class AccountRepository{}
+
+UserController --> UserService
+UserService --> UserRepository
+
+AccountController --> AccountService
+AccountService --> AccountRepository
+
+'---------- Monitoring ----------
+
+
+
+class MonitoringController{
+    + DevicesStatuses() [GET]
+    + DisableDevice() [POST]
+    + SendInfoToUser() [POST]
+    
+}
+
+class MonitoringService{
+    + DevicesStatuses()
+    + DisableDevice()
+    + SendInfoToUser()
+}
+
+class NotificationIntegrationService{
+    + SendInfoToUser()
+}
+
+class MonitoringRepository{
+    + DevicesStatuses()
+    + DisableDevice()
+}
+
+MonitoringController --> MonitoringService
+MonitoringService --> NotificationIntegrationService
+MonitoringService --> MonitoringRepository
+
+'----------- Notification --------------
+
+class NotificationHostedService{
+    + RunAsync() : "подписка к очереди уведомлений"
+}
+
+interface IMessageBrokerService{
+      + Connect()
+      + CheckConnection()
+      + Consume()
+      + Publish()
+  }
+
+class MessageBrokerService{
+    + Connect()
+    + CheckConnection()
+    + Consume()
+    + Publish()
+}
+
+class NotificationService{
+    + SendInfoToUser()
+}
+
+
+class NotificationController{
+    + SendInfoToUser()
+}
+
+
+IMessageBrokerService --> MessageBrokerService
+MessageBrokerService <--> NotificationHostedService
+
+NotificationController --> NotificationService 
+NotificationService --> MessageBrokerService : "публикация в MQ"
+
+
+@enduml
