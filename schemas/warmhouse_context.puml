@@ -1,0 +1,20 @@
+@startuml Warmhouse_Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Smart Home (Монолит)
+
+Person(user, "Пользователь", "Владелец умного дома, управляет отоплением и мониторит температуру")
+Person(admin, "Администратор", "Подключает пользователей к системе вручную")
+
+System(smart_home, "Система Smart Home", "Монолитное приложение для управления отоплением и мониторинга температуры в умном доме.")
+
+System_Ext(heating_sensor, "Датчик отопления", "Устройство для измерения и регулировки температуры отопления")
+
+Rel(user, smart_home, "Управляет температурой, просматривает состояние датчиков", "HTTP/REST")
+Rel(admin, smart_home, "Регистрирует пользователей, настраивает систему", "HTTP/REST")
+
+Rel(heating_sensor, smart_home, "Отправляет данные о состоянии, получает команды управления", "Синхронное подключение")
+
+Rel(smart_home, user, "Отображает ошибки и состояние устройств", "HTTP Response")
+
+@enduml

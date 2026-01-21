@@ -1,0 +1,80 @@
+@startuml C4_Components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(person1, "Пользователь", "Использует мобильное приложение")
+
+System_Boundary(mobile_boundary, "Мобильное приложение") {
+    Component(mob_ui, "UI", "Flutter/React Native", "Экраны, навигация")
+    Component(mob_api_client, "API Client", "REST", "Отправляет запросы в API Gateway")
+    Component(mob_push_handler, "Push Handler", "Firebase SDK", "Принимает пуш-уведомления")
+}
+
+Container(api, "API Gateway", "NGINX/YARP", "Маршрутизация")
+
+System_Boundary(server_boundary, "Серверная часть системы") {
+
+    Container_Boundary(users_boundary, "Сервис Пользователей") {
+        Component(users_controller, "UsersController", ".NET API", "CRUD операции пользователя")
+        Component(users_service, "UsersService", "Application Layer", "Бизнес-логика пользователей")
+        Component(users_repo, "UsersRepository", "EF Core", "Доступ к данным пользователей")
+    }
+
+    Container_Boundary(home_boundary, "Сервис управления домом") {
+        Component(home_controller, "HomeController", ".NET API", "")
+        Component(home_service, "HomeService", "Application Layer", "Бизнес-логика комнат, сценариев")
+        Component(home_repo, "HomeRepository", "EF Core", "Данные по дому")
+    }
+
+    Container_Boundary(devices_boundary, "Сервис устройств") {
+        Component(devices_controller, "DevicesController", ".NET API")
+        Component(devices_service, "DevicesService", "Application Layer", "Регистрация и управление устройствами")
+        Component(devices_repo, "DevicesRepository", "EF Core")
+    }
+
+    Container_Boundary(monitoring_boundary, "Сервис мониторинга") {
+        Component(mon_controller, "MonitoringController", ".NET API")
+        Component(mon_service, "MonitoringService", "Application Layer", "Обработка состояния датчиков")
+        Component(mon_repo, "MonitoringRepository", "EF Core")
+    }
+
+    Container_Boundary(notif_boundary, "Сервис уведомлений") {
+        Component(notif_listener, "RMQ Listener", ".NET Worker", "Слушает очереди RabbitMQ")
+        Component(notif_sender, "PushNotificationSender", "Firebase Client", "Отправляет пуши в Firebase")
+    }
+
+    ContainerDb(db, "База данных", "PostgreSQL", "Схемы: Users, Home, Devices, Monitoring")
+    Container(rmq, "RabbitMQ", "Message Broker", "Очереди событий")
+}
+
+System_Ext(device1, "Умный датчик", "Посылает данные")
+System_Ext(device2, "Умный датчик", "Посылает данные")
+System_Ext(firebase, "Firebase", "Push Notifications")
+
+
+Rel(person1, mob_ui, "Использует")
+Rel(mob_ui, mob_api_client, "Запросы API")
+Rel(mob_push_handler, person1, "Показывает уведомления")
+
+Rel(mob_api_client, api, "REST запросы")
+
+Rel(api, users_controller, "REST")
+Rel(api, home_controller, "REST")
+Rel(api, devices_controller, "REST")
+Rel(api, mon_controller, "REST")
+
+Rel(users_service, users_repo, "Чтение/запись")
+Rel(users_repo, db, "SQL")
+Rel(home_repo, db, "SQL")
+Rel(devices_repo, db, "SQL")
+Rel(mon_repo, db, "SQL")
+
+Rel(device1, api, "Отправка данных")
+Rel(device2, api, "Отправка данных")
+
+Rel(mon_service, rmq, "Публикация событий")
+Rel(notif_listener, rmq, "Чтение событий")
+
+Rel(notif_sender, firebase, "Пуш-уведомления")
+Rel(firebase, mob_push_handler, "Пуши")
+
+@enduml

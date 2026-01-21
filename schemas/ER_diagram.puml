@@ -1,0 +1,130 @@
+@startuml
+
+' ---------- Users ----------
+entity "users.User" as User {
+  * Id : uuid <<PK>>
+  --
+  Phone      : varchar
+  Email      : varchar
+  FullName   : varchar
+  IsDisabled : bool
+  CreatedAt  : datetime
+}
+
+entity "users.Account" as Account {
+  * Id     : uuid <<PK>>
+  --
+  UserId        : uuid <<FK>>
+  Login         : varchar
+  Password      : varchar
+  Role          : varchar
+  LastLoginAt   : datetime
+}
+
+' ---------- Home ----------
+entity "home.Home" as Home {
+  * Id : uuid <<PK>>
+  --
+  Name      : varchar
+  Address   : varchar
+  CreatedAt : datetime
+}
+
+entity "home.UserHome" as UserHome {
+  * UserId : uuid <<FK>>
+  * HomeId : uuid <<FK>>
+  --
+  Role : varchar
+}
+
+
+' ---------- Devices ----------
+entity "devices.DeviceType" as DeviceType {
+  * Id : uuid <<PK>>
+  --
+  Name        : varchar
+  Category    : varchar
+  Description : text
+}
+
+entity "devices.Device" as Device {
+  * Id : uuid <<PK>>
+  --
+  HomeId       : uuid <<FK>>
+  DeviceTypeId : uuid <<FK>>
+  Name         : varchar
+  SerialNumber : varchar
+  IsConnected  : bool
+  IsDisabled   : bool
+  LastSeenAt   : datetime
+}
+
+' ---------- Monitoring ----------
+entity "monitoring.DeviceStatus" as DeviceStatus {
+  * Id : uuid <<PK>>
+  --
+  DeviceId : uuid <<FK>>
+  Status   : varchar
+  CreatedAt: datetime
+}
+
+entity "monitoring.DeviceStatusHistory" as DeviceStatusHistory {
+  * Id : uuid <<PK>>
+  --
+  DeviceId : uuid <<FK>>
+  Status   : varchar
+  CreatedAt: datetime
+}
+
+entity "monitoring.DeviceCommand" as DeviceCommand {
+  * Id : uuid <<PK>>
+  --
+  DeviceId   : uuid <<FK>>
+  CommandType: varchar
+  Payload    : jsonb
+  CreatedAt  : datetime
+  ExecutedAt : datetime
+  State      : varchar
+}
+
+' ---------- Notifications ----------
+entity "notifications.Notification" as Notification {
+  * Id : uuid <<PK>>
+  --
+  UserId   : uuid <<FK>>
+  DeviceId : uuid <<FK>> [0..1]
+  Title    : varchar
+  Body     : text
+  Channel  : varchar
+  CreatedAt: datetime
+  SentAt   : datetime
+  Status   : int
+}
+
+entity "notifications.NotificationSetting" as NotificationSetting {
+  * Id : uuid <<PK>>
+  --
+  UserId   : uuid <<FK>>
+  DeviceId : uuid <<FK>> [0..1]
+  Type     : varchar
+  IsEnabled: bool
+}
+
+' ---------- Relationships ----------
+User ||--|| Account : "1 : 1"
+User ||--o{ UserHome 
+Home ||--o{ UserHome
+Home ||--o{ Device
+DeviceType ||--o{ Device
+
+Device ||--o{ DeviceStatus
+Device ||--o{ DeviceCommand
+DeviceStatus ||--o{ DeviceStatusHistory
+
+User ||--o{ Notification
+Device ||--o{ Notification
+
+User ||--o{ NotificationSetting
+Device ||--o{ NotificationSetting
+
+@enduml

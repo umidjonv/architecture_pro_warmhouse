@@ -1,0 +1,53 @@
+@startuml Warmhouse_Containers
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(person1, "Пользователь", "пользовтель использует кабинет")
+
+
+Container(mobile, "Мобильное приложение", "", "")
+'System_Boundary(system_boundary, "система"){
+    
+    
+    Container(api, "API Gateway", "NGINX/YARP", "Маршрутизация запросов")        
+        
+    Container_Boundary(server_boundary, "Сервер"){
+    
+        Container(users, "Пользователи", "", "")
+        Container(home, "Управление домом", "", "")
+        Container(devices, "Устройства", "", "")
+        Container(monitoring, "Мониторинг устройств", "", "")
+        Container(notification, "Система уведомлений", "", "")
+        
+        ContainerDb(db, "База данных системы", "Postgres", "разделение по схемам", $sprite="Postgres")
+        Container(rmq, "RabbitMQ", "Message Broker", "Очереди, маршрутизация сообщений")
+                
+                
+    }
+'}
+System_Ext(device1, "Датчик умного дома", "подключается к серверу")
+System_Ext(device2, "Датчик умного дома", "подключается к серверу")
+System_Ext(firebase, "Firebase", "для уведомлений")
+'
+Rel(person1, mobile, "профиль","")
+Rel(mobile, api, "Запросы","REST")
+
+
+Rel(api, users, "Запросы","REST")
+Rel(api, home, "Запросы","REST")
+Rel(api, devices, "Запросы","REST")
+Rel(api, monitoring, "Запросы","REST")
+
+Rel(users, db, "SQL")
+Rel(home, db, "SQL")
+Rel(devices, db, "SQL")
+Rel(monitoring, db, "SQL")
+
+notification <--> rmq
+
+Rel(notification,  firebase, "уведомление")
+Rel(firebase, mobile, "пуш уведомления")
+Rel(device1, api, "отправка уведомлений")
+Rel(device2, api, "отправка уведомлений")
+
+
+@enduml
